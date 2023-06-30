@@ -1,0 +1,2 @@
+id,datetime,temperature,humidity,wind_speed,atmosphere_pressure,wind_direction,weather_station_id
+1,2023-06-29 22:07:55,25.5,50.2,10.0,1000.0,N,123
