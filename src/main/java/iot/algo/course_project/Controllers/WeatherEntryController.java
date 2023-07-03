@@ -4,10 +4,7 @@ import iot.algo.course_project.models.WeatherStation;
 import iot.algo.course_project.models.WeatherStationEntry;
 import iot.algo.course_project.Services.WeatherEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +28,16 @@ public class WeatherEntryController {
     @GetMapping("/station/{weatherStationId}")
     public List<WeatherStationEntry> getEntriesByWeatherStationId(@PathVariable int weatherStationId) {
         return weatherEntryService.getEntriesByWeatherStationId(weatherStationId);
+    }
+
+    @PostMapping("/")
+    public WeatherStationEntry saveEntry(@RequestBody WeatherStationEntry weatherStationEntry) {
+        return weatherEntryService.save(weatherStationEntry);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteEntry(@PathVariable int id) {
+        weatherEntryService.delete(id);
     }
 
     @GetMapping("/{entryId}")

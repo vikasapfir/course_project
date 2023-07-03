@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @Repository
 public class WeatherDataCSVRepository {
     private static final String CSV_SEPARATOR = ",";
+    private static final DateTimeFormatter FILENAME_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public Map<Integer, WeatherStationEntry> weatherDataMap;
@@ -24,11 +25,6 @@ public class WeatherDataCSVRepository {
 
         this.weatherDataMap = getAllEntriesFromCurrentMonthInMap();
         System.out.println(weatherDataMap);
-    }
-
-    public void addOrUpdateWeatherData(WeatherStationEntry weatherStationEntry) {
-        weatherDataMap.put(weatherStationEntry.getId(), weatherStationEntry);
-        saveAllWeatherData();
     }
 
     public List<WeatherStationEntry> getWeatherDataByWeatherStationId(int weatherStationId) {
@@ -53,18 +49,26 @@ public class WeatherDataCSVRepository {
     }
 
     public List<File> getAllFilesFromCurrentMonth() {
-        LocalDate currentDate = LocalDate.now();
-        String currentMonthYear = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        File currentMonthDirectory = new File(currentMonthYear);
 
-        if (currentMonthDirectory.exists() && currentMonthDirectory.isDirectory()) {
-            File[] files = currentMonthDirectory.listFiles();
-            if (files != null) {
-                return Arrays.asList(files);
+        List<File> files = new ArrayList<>();
+
+
+        LocalDate currentDate = LocalDate.now();
+        String currentMonth = currentDate.format(FILENAME_DATE_FORMATTER);
+
+
+        File currentDirectory = new File(".");
+        File[] allFiles = currentDirectory.listFiles();
+
+
+        assert allFiles != null;
+        for (File file : allFiles) {
+            if (file.isFile() && file.getName().startsWith("weatherdata-") && file.getName().contains(currentMonth)) {
+                files.add(file);
             }
         }
 
-        return Collections.emptyList();
+        return files;
     }
     public Map<Integer, WeatherStationEntry> getAllEntriesFromCurrentMonthInMap() {
         Map<Integer, WeatherStationEntry> entriesMap = new HashMap<>();
@@ -79,6 +83,39 @@ public class WeatherDataCSVRepository {
 
         return entriesMap;
     }
+
+    public WeatherStationEntry deleteWeatherDataById(int id) {
+        WeatherStationEntry entry = weatherDataMap.remove(id);
+        saveAllWeatherData();
+        return entry;
+    }
+
+    public WeatherStationEntry saveWeatherEntry(WeatherStationEntry weatherStationEntry) {
+        if (weatherDataMap.containsKey(weatherStationEntry.getId())) {
+            // Entry exists, update it
+            weatherDataMap.put(weatherStationEntry.getId(), weatherStationEntry);
+            saveAllWeatherData();
+        } else {
+            // Entry doesn't exist, upsert to CSV today file
+            File file = getFileIfNonExistsCreate();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(weatherStationEntry.getId()).append(CSV_SEPARATOR);
+                sb.append(formatDate(weatherStationEntry.getDatetime())).append(CSV_SEPARATOR);
+                sb.append(weatherStationEntry.getTemperature()).append(CSV_SEPARATOR);
+                sb.append(weatherStationEntry.getHumidity()).append(CSV_SEPARATOR);
+                sb.append(weatherStationEntry.getWindParameter().getSpeed()).append(CSV_SEPARATOR);
+                sb.append(weatherStationEntry.getWindParameter().getAtmospherePressure()).append(CSV_SEPARATOR);
+                sb.append(weatherStationEntry.getWindParameter().getDirection()).append(CSV_SEPARATOR);
+                sb.append(weatherStationEntry.getWeatherStationId()).append("\n");
+                writer.write(sb.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return weatherStationEntry;
+    }
+
     public List<WeatherStationEntry> readWeatherDataFromFile(File file) {
         List<WeatherStationEntry> weatherData = new ArrayList<>();
 
@@ -120,6 +157,7 @@ public class WeatherDataCSVRepository {
         return weatherData;
     }
 
+
     public void saveAllWeatherData() {
         File file = getFileIfNonExistsCreate();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
@@ -143,7 +181,7 @@ public class WeatherDataCSVRepository {
 
     private File getFileIfExists() {
         LocalDate currentDate = LocalDate.now();
-        String currentMonthYear = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        String currentMonthYear = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String fileName = "weatherdata-" + currentMonthYear + ".csv";
         File file = new File(fileName);
         if (file.exists()) {
@@ -154,8 +192,8 @@ public class WeatherDataCSVRepository {
 
     private File getFileIfNonExistsCreate() {
         LocalDate currentDate = LocalDate.now();
-        String currentMonthYear = currentDate.format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        String fileName = "weatherdata-" + currentMonthYear + ".csv";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String fileName = "weatherdata-" + currentDate.format(formatter) + ".csv";
         File file = new File(fileName);
         if (!file.exists()) {
             try {

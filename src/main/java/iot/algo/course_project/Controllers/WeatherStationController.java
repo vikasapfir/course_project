@@ -34,7 +34,7 @@ public class WeatherStationController {
         return weatherStationService.saveWeatherStation(weatherStation);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public void deleteWeatherStation(@PathVariable int id) {
         weatherStationService.deleteWeatherStation(id);
     }

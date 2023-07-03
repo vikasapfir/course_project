@@ -35,7 +35,7 @@ public class WeatherDataCSVRepositoryTest {
         entry.setWeatherStationId(123);
 
         // Add the weather data entry
-        weatherDataRepository.addOrUpdateWeatherData(entry);
+        weatherDataRepository.saveWeatherEntry(entry);
 
         // Retrieve the weather data entry
         WeatherStationEntry retrievedEntry = weatherDataRepository.getWeatherDataById(1);
@@ -60,7 +60,7 @@ public class WeatherDataCSVRepositoryTest {
         entry.setWeatherStationId(456);
 
         // Add the weather data entry
-        weatherDataRepository.addOrUpdateWeatherData(entry);
+        weatherDataRepository.saveWeatherEntry(entry);
         Assertions.assertTrue(weatherDataRepository.getWeatherDataMap().size() > 0);
         // Retrieve the weather data entry by ID
         WeatherStationEntry retrievedEntry = weatherDataRepository.getWeatherDataById(2);

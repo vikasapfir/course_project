@@ -187,7 +187,7 @@ public class WeatherStationCSVRepository {
     private void saveAllWeatherStations(List<WeatherStation> weatherStations, String filePath) {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Objects.requireNonNull(getFileFromResourcesByDateIfNonExistsCreate(filePath))))) {
-            //writer.write("id,GPS,city,street,manufacturer,installation_date,date_of_work,work_description\n");
+            writer.write("id,GPS,city,street,manufacturer,installation_date,date_of_work,work_description\n");
             for (WeatherStation weatherStation : weatherStations) {
 
                 StringBuilder sb = new StringBuilder();
