@@ -1,1 +1,2 @@
 # course_project
+api, which allows you to receive and transfer data from the weather station about temperature, humidity, wind speed, its direction, atmospheric pressure, location (gps), location of the weather station, manufacturer of the weather station, location of the weather station (gps + address), date of installation, date of service work with weather station and description of works
